@@ -25,6 +25,7 @@ stages:
                 echo $file
                 if [[ $file == *"upstream/src"* ]]; then
                     echo "##vso[task.setvariable variable=is_upstream_src_modified;isOutput=true]true"
+                    echo "got it"
                 fi
               done
               echo $(is_upstream_src_modified)
