@@ -26,6 +26,7 @@ stages:
                     echo "##vso[task.setvariable variable=is_upstream_src_modified;isOutput=true]true"
                 fi
               done
+              echo $(is_upstream_src_modified)
             displayName: 'Check upstream'
 
           - script: |
@@ -36,11 +37,15 @@ stages:
                   echo "##vso[task.setvariable variable=is_downstream_src_modified;isOutput=true]true"
                 fi
               done
+              echo $(is_downstream_src_modified)
             displayName: 'Check downstream'
 
       - job: Build_upstream
         dependsOn: Check_Modified_files
         steps:
+          - script: |
+              echo $(is_upstream_src_modified)
+
           - task: DownloadBuildArtifacts@1
             inputs:
               buildType: 'specific'
@@ -54,6 +59,7 @@ stages:
             displayName: Download upstream App image
 
           - script: |
+              echo $(is_upstream_src_modified)
               ls $(System.DefaultWorkingDirectory)/upstream_app
               if [[ -f "$(System.DefaultWorkingDirectory)/upstream_app/buildVersion" ]]
               then
@@ -80,6 +86,9 @@ stages:
       - job: Build_downstream
         dependsOn: Check_Modified_files
         steps:
+          - script: |
+              echo $(is_downstream_src_modified)
+
           - task: DownloadBuildArtifacts@1
             inputs:
               buildType: 'specific'
@@ -93,6 +102,7 @@ stages:
             displayName: Download downstream App image
 
           - script: |
+              echo $(is_downstream_src_modified)
               if [[ -f "$(System.DefaultWorkingDirectory)/downstream_app/buildVersion" ]]
               then
                   echo $(System.DefaultWorkingDirectory)/downstream_app/buildVersion
