@@ -1,0 +1,113 @@
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - downstream
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  npm_config_cache: $(Pipeline.Workspace)/.npm
+  is_upstream_src_modified: false
+  is_downstream_src_modified: false
+
+stages:
+  - stage: Build
+    jobs:
+      - job: Check_Modified_files
+        steps:
+          - script: |
+              files=$(git diff HEAD HEAD~ --name-only)
+              for file in $files
+              do
+                if [[ $file == *"upstream/src"* ]]; then
+                    echo "##vso[task.setvariable variable=is_upstream_src_modified;]true"
+                fi
+              done
+            displayName: 'Check upstream'
+
+          - script: |
+              files=$(git diff HEAD HEAD~ --name-only)
+              for file in $files
+              do
+                if [[ $file == *"downstream/src"* ]]; then
+                  echo "##vso[task.setvariable variable=is_downstream_src_modified;]true"
+                fi
+              done
+            displayName: 'Check downstream'
+
+      - job: Build_upstream
+        dependsOn: [Installing_Tools]
+        steps:
+          - task: DownloadBuildArtifacts@1
+            inputs:
+              buildType: 'specific'
+              project: '14553e2b-c3c6-439c-95ac-d7289641f695'
+              pipeline: '5'
+              buildVersionToDownload: 'latest'
+              downloadType: 'specific'
+              itemPattern: 'upstream_app/**'
+              downloadPath: '$(System.DefaultWorkingDirectory)'
+            condition: eq(variables.is_upstream_src_modified, 'false')
+            displayName: Download upstream App image
+
+          - script: |
+              ls $(System.DefaultWorkingDirectory)/upstream_app
+              if [[ -f "$(System.DefaultWorkingDirectory)/upstream_app/buildVersion" ]]
+              then
+                  echo $(System.DefaultWorkingDirectory)/upstream_app/buildVersion
+              else
+                  echo "##vso[task.setvariable variable=is_upstream_src_modified;]true"
+              fi
+            condition: eq(variables.is_upstream_src_modified, 'false')
+            displayName: Restore upstream App image
+
+          - script: |
+              mkdir $(System.DefaultWorkingDirectory)/upstream_app
+              echo '$(Build.BuildNumber)' > upstream_app/buildVersion
+            condition: eq(variables.is_upstream_src_modified, 'true')
+            displayName: Save upstream App image
+
+          - publish: $(System.DefaultWorkingDirectory)/upstream_app
+            artifact: upstream_app
+            # condition: eq(variables.is_upstream_src_modified, 'true')
+            displayName: Publish upstream App image
+
+
+
+      - job: Build_downstream
+        dependsOn: [Installing_Tools]
+        steps:
+          - task: DownloadBuildArtifacts@1
+            inputs:
+              buildType: 'specific'
+              project: '14553e2b-c3c6-439c-95ac-d7289641f695'
+              pipeline: '5'
+              buildVersionToDownload: 'latest'
+              downloadType: 'specific'
+              itemPattern: 'downstream_app/**'
+              downloadPath: '$(System.DefaultWorkingDirectory)'
+            condition: eq(variables.is_downstream_src_modified, 'false')
+            displayName: Download downstream App image
+
+          - script: |
+              if [[ -f "$(System.DefaultWorkingDirectory)/downstream_app/buildVersion" ]]
+              then
+                  echo $(System.DefaultWorkingDirectory)/downstream_app/buildVersion
+              else
+                  echo "##vso[task.setvariable variable=is_downstream_src_modified;]true"
+              fi
+            displayName: Restore downstream App image
+          - script: |
+              mkdir $(System.DefaultWorkingDirectory)/downstream_app
+              echo '$(Build.BuildNumber)' > downstream_app/buildVersion
+            condition: eq(variables.is_downstream_src_modified, 'true')
+            displayName: Save downstream App image
+
+          - publish: $(System.DefaultWorkingDirectory)/downstream_app
+            artifact: downstream_app
+            # condition: eq(variables.is_downstream_src_modified, 'true')
+            displayName: Publish downstream App image
