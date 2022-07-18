@@ -10,7 +10,6 @@ pool:
   vmImage: ubuntu-latest
 
 variables:
-  npm_config_cache: $(Pipeline.Workspace)/.npm
   is_upstream_src_modified: false
   is_downstream_src_modified: false
 
@@ -40,7 +39,6 @@ stages:
             displayName: 'Check downstream'
 
       - job: Build_upstream
-        dependsOn: [Installing_Tools]
         steps:
           - task: DownloadBuildArtifacts@1
             inputs:
@@ -79,7 +77,6 @@ stages:
 
 
       - job: Build_downstream
-        dependsOn: [Installing_Tools]
         steps:
           - task: DownloadBuildArtifacts@1
             inputs:
