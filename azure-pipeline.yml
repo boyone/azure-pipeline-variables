@@ -39,12 +39,13 @@ stages:
             displayName: 'Check downstream'
 
       - job: Build_upstream
+        dependsOn: Check_Modified_files
         steps:
           - task: DownloadBuildArtifacts@1
             inputs:
               buildType: 'specific'
-              project: '14553e2b-c3c6-439c-95ac-d7289641f695'
-              pipeline: '5'
+              project: '673d6d0d-f908-4430-bf35-c2a89780097d'
+              pipeline: '8'
               buildVersionToDownload: 'latest'
               downloadType: 'specific'
               itemPattern: 'upstream_app/**'
@@ -77,12 +78,13 @@ stages:
 
 
       - job: Build_downstream
+        dependsOn: Check_Modified_files
         steps:
           - task: DownloadBuildArtifacts@1
             inputs:
               buildType: 'specific'
-              project: '14553e2b-c3c6-439c-95ac-d7289641f695'
-              pipeline: '5'
+              project: '673d6d0d-f908-4430-bf35-c2a89780097d'
+              pipeline: '8'
               buildVersionToDownload: 'latest'
               downloadType: 'specific'
               itemPattern: 'downstream_app/**'
