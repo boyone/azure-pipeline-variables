@@ -23,7 +23,7 @@ stages:
               for file in $files
               do
                 if [[ $file == *"upstream/src"* ]]; then
-                    echo "##vso[task.setvariable variable=is_upstream_src_modified;]true"
+                    echo "##vso[task.setvariable variable=is_upstream_src_modified;isOutput=true]true"
                 fi
               done
             displayName: 'Check upstream'
@@ -33,7 +33,7 @@ stages:
               for file in $files
               do
                 if [[ $file == *"downstream/src"* ]]; then
-                  echo "##vso[task.setvariable variable=is_downstream_src_modified;]true"
+                  echo "##vso[task.setvariable variable=is_downstream_src_modified;isOutput=true]true"
                 fi
               done
             displayName: 'Check downstream'
@@ -59,7 +59,7 @@ stages:
               then
                   echo $(System.DefaultWorkingDirectory)/upstream_app/buildVersion
               else
-                  echo "##vso[task.setvariable variable=is_upstream_src_modified;]true"
+                  echo "##vso[task.setvariable variable=is_upstream_src_modified;isOutput=true]true"
               fi
             condition: eq(variables.is_upstream_src_modified, 'false')
             displayName: Restore upstream App image
@@ -97,7 +97,7 @@ stages:
               then
                   echo $(System.DefaultWorkingDirectory)/downstream_app/buildVersion
               else
-                  echo "##vso[task.setvariable variable=is_downstream_src_modified;]true"
+                  echo "##vso[task.setvariable variable=is_downstream_src_modified;isOutput=true]true"
               fi
             displayName: Restore downstream App image
           - script: |
