@@ -22,6 +22,7 @@ stages:
               files=$(git diff HEAD HEAD~ --name-only)
               for file in $files
               do
+                echo $file
                 if [[ $file == *"upstream/src"* ]]; then
                     echo "##vso[task.setvariable variable=is_upstream_src_modified;isOutput=true]true"
                 fi
